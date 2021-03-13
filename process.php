@@ -31,13 +31,24 @@ if(isset($_POST["website_name"])){
 }
 
 $result["url"] = $url;
-$temp = "http://example.com/sdff";
-$result["temp"] = $temp;
-if (preg_match( '/^(http|https):\\/\\/[a-z0-9_]+([\\-\\.]{1}[a-z_0-9]+)*\\.[_a-z]{2,5}'.'((:[0-9]{1,5})?\\/.*)?$/i' ,$temp)) {
+if (preg_match( '/^(http|https):\\/\\/[a-z0-9_]+([\\-\\.]{1}[a-z_0-9]+)*\\.[_a-z]{2,5}'.'((:[0-9]{1,5})?\\/.*)?$/i' ,$url)) {
     $result["error"] = "Valid URL";
 } else {
     $result["error"] = "Invalid URL";
 }
+
+$file = $temp;
+$file_headers = @get_headers($file);
+if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found') {
+    $exists = false;
+    $result["msg"] = "Doesn't Exist";
+}
+else {
+    $exists = true;
+    $result["msg"] = "Exist";
+}
+
+$result["header"] = $file_headers;
 
 echo json_encode($result);
 
