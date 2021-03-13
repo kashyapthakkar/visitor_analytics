@@ -27,28 +27,61 @@ $url = "";                                                                   //a
 
 //checks if action is provided
 if(isset($_POST["website_name"])){
-    $url = $_POST["website_name"];
+    $url = filter_var($_POST["website_name"], FILTER_SANITIZE_URL);
 }
 
 $result["url"] = $url;
 if (preg_match( '/^(http|https):\\/\\/[a-z0-9_]+([\\-\\.]{1}[a-z_0-9]+)*\\.[_a-z]{2,5}'.'((:[0-9]{1,5})?\\/.*)?$/i' ,$url)) {
-    $result["error"] = "Valid URL";
+    $file = $url;
+    $file_headers = @get_headers($file);
+    if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found') {
+        $result["error"] = "404 Not Found";
+    }
+    else {
+        try{
+            $stmt = $conn->prepare("select * from websites");
+            $stmt->execute();
+            $urls = $stmt->fetchAll();
+            
+            $urlExist = false;
+            for($i=0; $i<sizeof($urls); $i++){
+                
+                if($urls[$i]["url"] == $url){
+                    
+                    $urlExist = true;
+                    try{
+                        $stmt = $conn->prepare("update websites set visits=? where url_id=?");
+                        $stmt->execute([($urls[$i]["visits"] + 1), $urls[$i]["url_id"]]);
+                        if($stmt){
+                            $result["message"] = "visit Updated Successfully!";
+                        }else{
+                            $result["message"] = "Failed to Update Visits!";
+                        }
+                    }catch(Exception $e){
+                        echo "Error: " . $e->getMessage();
+                    }
+                }
+            }
+            if(!$urlExist){
+                try{
+                    $stmt = $conn->prepare("insert into websites (url, visits) values(?, ?)");
+                    $stmt->execute([$url, 1]);
+                    if($stmt){
+                        $result["message"] = "url Added Successfully!";
+                    }else{
+                        $result["message"] = "Failed to Add url!";
+                    }
+                }catch(Exception $e){
+                    echo "Error: " . $e->getMessage();
+                }
+            }
+        }catch(Exception $e){
+            echo "Error: " . $e->getMessage();
+        }
+    }
 } else {
     $result["error"] = "Invalid URL";
 }
-
-$file = $temp;
-$file_headers = @get_headers($file);
-if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found') {
-    $exists = false;
-    $result["msg"] = "Doesn't Exist";
-}
-else {
-    $exists = true;
-    $result["msg"] = "Exist";
-}
-
-$result["header"] = $file_headers;
 
 echo json_encode($result);
 
