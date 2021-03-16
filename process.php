@@ -26,8 +26,8 @@ catch(PDOException $e)                                                          
 $url = "";                                                                   //action from front-end
 
 //checks if action is provided
-if(isset($_POST["website_name"])){
-    $url = filter_var($_POST["website_name"], FILTER_SANITIZE_URL);
+if(isset($_GET["website_name"])){
+    $url = filter_var($_GET["website_name"], FILTER_SANITIZE_URL);
 }
 
 $result["url"] = $url;
@@ -54,6 +54,11 @@ if (preg_match( '/^(http|https):\\/\\/[a-z0-9_]+([\\-\\.]{1}[a-z_0-9]+)*\\.[_a-z
                         $stmt->execute([($urls[$i]["visits"] + 1), $urls[$i]["url_id"]]);
                         if($stmt){
                             $result["message"] = "visit Updated Successfully!";
+
+                            $result["url_data"] = array(
+                                "visits"=>$urls[$i]["visits"] + 1,
+                                "timestamp"=>$urls[$i]["date"]
+                            );
                         }else{
                             $result["message"] = "Failed to Update Visits!";
                         }
