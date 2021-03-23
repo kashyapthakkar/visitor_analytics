@@ -1,9 +1,9 @@
 <?php
 
-$DB['server'] = 'localhost';                                                //Server
-$DB['user'] = 'root';                                                       //username
-$DB['password'] = '';                                                       //password
-$DB['db'] = 'visitors_data';                                               //database name
+$DB['server'] = 'remotemysql.com';                                                //Server
+$DB['user'] = '6CkDUmmAHw';                                                       //username
+$DB['password'] = 'rptUj5wLe0';                                                       //password
+$DB['db'] = '6CkDUmmAHw';                                               //database name
 
 try
 {
